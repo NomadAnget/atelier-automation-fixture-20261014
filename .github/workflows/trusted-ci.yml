@@ -1,0 +1,35 @@
+name: Synthetic trusted CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Actual arithmetic tests
+        run: python3 -m unittest discover -s tests -v
+  publish:
+    needs: candidate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish required result for this exact head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "/repos/$REPOSITORY/statuses/$HEAD_SHA" \
+            -f state=success -f context='atelier/trusted-ci' \
+            -f description='synthetic trusted fixture tests passed' -f target_url="$RUN_URL"
