@@ -20,7 +20,13 @@ jobs:
           test "$GITHUB_REF_NAME" = "acceptance/tag-driver"
           git config user.name acceptance-fixture
           git config user.email acceptance@localhost
-          git tag -a v0.0.20261014 6123f048335e2888d2a434fc338fc3d93a005390 -m "Synthetic annotated tag; isolated functional acceptance only"
+          git show-ref --quiet refs/tags/v0.0.20261014 || git tag -a v0.0.20261014 6123f048335e2888d2a434fc338fc3d93a005390 -m "Synthetic annotated tag; isolated functional acceptance only"
           git -c credential.helper= -c 'credential.https://github.com.helper=!f() { echo username=x-access-token; echo "password=$GH_TOKEN"; }; f' push origin refs/tags/v0.0.20261014
           git rev-parse refs/tags/v0.0.20261014
           git rev-parse refs/tags/v0.0.20261014^{commit}
+      - name: Export public synthetic Git objects only
+        run: git bundle create fixture.bundle --all
+      - uses: actions/upload-artifact@v4
+        with:
+          name: functional-fixture-git-bundle
+          path: fixture.bundle
