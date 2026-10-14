@@ -1,20 +1,54 @@
-name: Public runner private-source access acceptance
+name: Actual synthetic development loop
 on:
   push:
     branches: [acceptance/full-loop-20261014]
+  workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  statuses: write
 jobs:
-  access:
-    if: github.actor == github.repository_owner
+  bootstrap-check:
+    if: github.event_name == 'push' && github.actor == github.repository_owner
     runs-on: ubuntu-latest
     steps:
-      - name: Verify existing token access without displaying source or credentials
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11"
+          enable-cache: false
+      - run: uv run --no-project python -m unittest discover -s tests -v
+      - name: Publish result of the actual bootstrap tests
         env:
-          GH_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
-        run: |
-          set -euo pipefail
-          test -n "$GH_TOKEN"
-          gh api repos/NomadAnget/atelier-automation-acceptance-20261014 --jq '{id,private}'
-          gh api repos/NomadAnget/atelier-sync --jq '{id,private}'
-          gh api repos/NomadAnget/atelier-core --jq '{id,private}'
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -f state=success -f context=atelier/trusted-ci -f description='Actual bootstrap tests passed'
+  loop:
+    if: github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          repository: NomadAnget/atelier-automation-acceptance-20261014
+          ref: 4a6d044cbaab2e13392faaf9ce73bcb2dc5af0a2
+          token: ${{ secrets.GH_SYNC_TOKEN }}
+          persist-credentials: false
+          path: control
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11"
+          enable-cache: false
+      - run: uv venv --python 3.11 .venv
+        working-directory: control/.github/loop-control
+      - name: Execute actual coordinator and confirm both mirrors
+        working-directory: control/.github/loop-control
+        env:
+          GH_SYNC_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
+          FORGEJO_SYNC_TOKEN: ${{ secrets.FORGEJO_SYNC_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          COORDINATOR_STATE_BRANCH: loop-state-20261014
+          COORDINATOR_REPOSITORY: NomadAnget/atelier-automation-acceptance-20261014
+          COORDINATOR_TRUSTED_SHA: 4a6d044cbaab2e13392faaf9ce73bcb2dc5af0a2
+        run: .venv/bin/python loop.py
