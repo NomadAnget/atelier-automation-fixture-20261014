@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: NomadAnget/atelier-automation-acceptance-20261014
-          ref: a1ff50d7bed6df403cf7b8b758610083c6348e80
+          ref: dcf9269e308eca055a27fde339760552e1b5fdc7
           token: ${{ secrets.GH_SYNC_TOKEN }}
           persist-credentials: false
           path: control
@@ -32,6 +32,6 @@ jobs:
           GH_SYNC_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
           COORDINATOR_STATE_BRANCH: loop-state-20261014
           COORDINATOR_REPOSITORY: NomadAnget/atelier-automation-acceptance-20261014
-          COORDINATOR_TRUSTED_SHA: a1ff50d7bed6df403cf7b8b758610083c6348e80
+          COORDINATOR_TRUSTED_SHA: dcf9269e308eca055a27fde339760552e1b5fdc7
           PYTHONPATH: control/.github/loop-control
         run: .venv/bin/python -m coordination.ci publish --registry control/.github/loop-control/registry.json
