@@ -1,0 +1,3 @@
+[submodule "domain"]
+ path = src/domain
+ url = https://github.com/NomadAnget/atelier-automation-acceptance-20261014.git
