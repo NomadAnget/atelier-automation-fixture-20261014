@@ -32,3 +32,5 @@ jobs:
           path: fixture.bundle
 
 # Refresh bundle after same-line conflict fixtures; synthetic public objects only.
+
+# Final bundle after both independent README regions merged.
