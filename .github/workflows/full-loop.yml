@@ -1,0 +1,20 @@
+name: Public runner private-source access acceptance
+on:
+  push:
+    branches: [acceptance/full-loop-20261014]
+permissions:
+  contents: read
+jobs:
+  access:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify existing token access without displaying source or credentials
+        env:
+          GH_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          gh api repos/NomadAnget/atelier-automation-acceptance-20261014 --jq '{id,private}'
+          gh api repos/NomadAnget/atelier-sync --jq '{id,private}'
+          gh api repos/NomadAnget/atelier-core --jq '{id,private}'
