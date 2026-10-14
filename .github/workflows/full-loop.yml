@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: NomadAnget/atelier-automation-acceptance-20261014
-          ref: 4a6d044cbaab2e13392faaf9ce73bcb2dc5af0a2
+          ref: f7f66672ff93672612af6a15553d3e67a777ed96
           token: ${{ secrets.GH_SYNC_TOKEN }}
           persist-credentials: false
           path: control
@@ -50,5 +50,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           COORDINATOR_STATE_BRANCH: loop-state-20261014
           COORDINATOR_REPOSITORY: NomadAnget/atelier-automation-acceptance-20261014
-          COORDINATOR_TRUSTED_SHA: 4a6d044cbaab2e13392faaf9ce73bcb2dc5af0a2
+          COORDINATOR_TRUSTED_SHA: f7f66672ff93672612af6a15553d3e67a777ed96
         run: .venv/bin/python loop.py
